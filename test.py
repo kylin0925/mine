@@ -1,24 +1,34 @@
 import Tkinter,Image,ImageDraw,ImageTk
-def say_hi():
-    print "hi!!!"
-def frame_say_hi(event):
-    print "hi  " + str(event.x) + "," + str(event.y)
+class App(Tkinter.Frame):
+    myCan = None
+    im = None
+    draw = None
+    pm = None
+    tk_img = None
+    i = 0
+    def say_hi(self):
+        print "hi!!!"
+    def frame_say_hi(self,event):
+        print "hi" + str(event.x) + "," + str(event.y)
+        self.im = Image.new("RGB",(200,200),0xffff00)
+        self.draw = ImageDraw.Draw(self.im)
+        self.draw.line([0,0,40,self.i],fill=127)
+        self.pm = ImageTk.PhotoImage(self.im)
+        ##print dir(can)
+        #can.delete(tk_img)
+        self.tk_img = self.myCan.create_image(100,100,image=self.pm)
+        self.i = self.i + 10
+    def __init__(self,master):
+        Tkinter.Frame.__init__(self,master)
+        self.pack()
+
+        frame = Tkinter.Frame(self,width=200,height=200)
+        frame.pack();
+        self.myCan = Tkinter.Canvas(frame,highlightthickness=0,width=200,height=200,bg="black")
+        self.myCan.bind("<Button-1>",self.frame_say_hi)
+        self.myCan.pack()
 
 root = Tkinter.Tk()
-frame = Tkinter.Frame(root,width=200,height=200)
-frame.pack()
-
-can = Tkinter.Canvas(frame,highlightthickness=0,width=200,height=200,bg="black")
-can.bind("<Button-1>",frame_say_hi)
-can.pack()
-
-im = Image.new("RGB",(200,200),0xffff00)
-draw = ImageDraw.Draw(im)
-draw.line([0,0,40,30],fill=127)
-#draw.rectangle([0, 0, 40, 40 ],  fill="green")
-#del draw
-draw.ellipse((10,10,50,50),fill=127)
-pm = ImageTk.PhotoImage(im)
-tk_img = can.create_image(100,100,image=pm)
-
-root.mainloop()
+myapp=App(master=root)
+root.title("test")
+myapp.mainloop()
