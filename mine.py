@@ -17,16 +17,71 @@ board_show = [  [0,0,0,0,0,0],\
 
 
 #const total block x,y
-tot_x =len(board[0])#10
+
+tot_x = len(board[0])#10
 tot_y = len(board)
+tot_bomb = 3
 block_d = 20 #block is a square
 #block_w = 20
 
 #draw black block
 blk_x = 0
 blk_y = 0
+BOMB = 9
 game_over = False
-def check_board(y,x):
+def gen_board(dim_x,dim_y):
+    return [[0 for i in range( dim_x)] for i in range( dim_y)]
+
+def gen_bomb(x,dim_x,dim_y,board):
+    import random
+    random.seed()
+    for i in range(x):
+        n = random.randrange(0,dim_x*dim_y)
+        _x = n % dim_x
+        _y = n / dim_y
+        board[_y][_x] = BOMB
+def is_bomb(x,y,board):
+    if board[y][x] == BOMB:
+        return 1
+    else:
+        return 0
+def cnt_bomb(dim_x,dim_y,board):
+    for y in range(dim_y):
+        for x in range(dim_x):
+            if board[y][x] == BOMB:
+                continue
+            bomb_cnt = 0
+            if x - 1 >=0 and y-1 >=0 :
+                bomb_cnt = bomb_cnt + is_bomb(x-1,y-1,board)
+
+            if y - 1 >=0 :
+                bomb_cnt = bomb_cnt + is_bomb(x,y-1,board)
+
+            if x + 1 <len(board[0]) and y-1 >=0 :
+                bomb_cnt = bomb_cnt + is_bomb(x + 1,y - 1,board)
+
+            if x - 1 >=0 :
+                bomb_cnt = bomb_cnt + is_bomb(x-1,y,board)
+
+            if x + 1 <len(board) :
+                bomb_cnt = bomb_cnt + is_bomb(x+1, y,board)
+
+            if y + 1 <len(board[0]) and x-1 >=0 :
+                bomb_cnt = bomb_cnt + is_bomb(x-1,y+1,board)
+
+            if y + 1 <len(board[0]) and board_show[y+1][x]!=1:
+                bomb_cnt = bomb_cnt + is_bomb(x,y+1,board)
+
+            if y + 1 <len(board) and x + 1 <len(board[0]) :
+                bomb_cnt = bomb_cnt + is_bomb(x+1,y+1,board)
+            board[y][x] = bomb_cnt
+_board = gen_board(tot_x,tot_y)
+gen_bomb (tot_bomb,tot_x,tot_y,_board)
+print _board
+cnt_bomb(tot_x,tot_y,_board)
+for s in _board:
+    print s
+def check_board(x,y):
     global game_over 
     if game_over == True:
         return
@@ -43,28 +98,28 @@ def check_board(y,x):
 
 #check lu u ru -> l r -> bl b br
     if x - 1 >=0 and y-1 >=0 and board_show[y-1][x-1]!=1:
-        check_board(y-1,x-1)
+        check_board(x-1,y-1)
 
     if y - 1 >=0 and board_show[y-1][x]!=1:
-        check_board(y-1,x)
+        check_board(x,y-1)
 
     if x + 1 <len(board[0]) and y-1 >=0 and board_show[y-1][x+1]!=1:
-        check_board(y - 1,x + 1)
+        check_board(x + 1,y - 1)
 
     if x - 1 >=0 and board_show[y][x-1]!=1:
-        check_board(y,x-1)
+        check_board(x-1,y)
 
     if x + 1 <len(board) and board_show[y][x+1]!=1:
-        check_board(y, x+1)
+        check_board(x+1, y)
 
     if y + 1 <len(board[0]) and x-1 >=0 and board_show[y+1][x-1]!=1:
-        check_board(y+1,x-1)
+        check_board(x-1,y+1)
 
     if y + 1 <len(board[0]) and board_show[y+1][x]!=1:
-        check_board(y+1,x)
+        check_board(x,y+1)
 
     if y + 1 <len(board) and x + 1 <len(board[0]) and board_show[y+1][x+1]!=1:
-        check_board(y+1,x+1)
+        check_board(x+1,y+1)
 
 
 def draw(event):
@@ -78,7 +133,7 @@ def draw(event):
     #if game_over == True:
     #    return
 
-    check_board(y,x)
+    check_board(x,y)
     print "is GameOver ?",game_over
     global lbl 
     if game_over == True:
