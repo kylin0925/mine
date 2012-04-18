@@ -21,7 +21,8 @@ board_show = [  [0,0,0,0,0,0],\
 tot_x = len(board[0])#10
 tot_y = len(board)
 tot_bomb = 3
-block_d = 20 #block is a square
+remain_blk = tot_x * tot_y - tot_bomb
+block_d = 50 #block is a square
 #block_w = 20
 
 #draw black block
@@ -29,6 +30,7 @@ blk_x = 0
 blk_y = 0
 BOMB = 9
 game_over = False
+lbl = None
 def gen_board(dim_x,dim_y):
     return [[0 for i in range( dim_x)] for i in range( dim_y)]
 
@@ -75,17 +77,13 @@ def cnt_bomb(dim_x,dim_y,board):
             if y + 1 <len(board) and x + 1 <len(board[0]) :
                 bomb_cnt = bomb_cnt + is_bomb(x+1,y+1,board)
             board[y][x] = bomb_cnt
-_board = gen_board(tot_x,tot_y)
-gen_bomb (tot_bomb,tot_x,tot_y,_board)
-print _board
-cnt_bomb(tot_x,tot_y,_board)
-for s in _board:
-    print s
 def check_board(x,y):
     global game_over 
+    global remain_blk
+    print "remain_blk : ",remain_blk
     if game_over == True:
         return
-    print "x:"+ str(x) + " y:"+ str(y)
+#    print "x:"+ str(x) + " y:"+ str(y)
     if board[y][x] == 9:
         print "x:"+ str(x) + " y:"+ str(y) + " Game Over"
         game_over = True
@@ -93,6 +91,7 @@ def check_board(x,y):
         return
 
     board_show[y][x]=1
+    remain_blk = remain_blk - 1
     if board[y][x] != 0:
         return
 
@@ -135,23 +134,17 @@ def draw(event):
 
     check_board(x,y)
     print "is GameOver ?",game_over
+    print "remain_blk : ",remain_blk
     global lbl 
     if game_over == True:
         lbl.set("game over")
+    if remain_blk == 0 :
+        lbl.set("Success!!")
+        game_over = True
     redraw(c,event.x/block_d,event.y/block_d)
-'''
-    global blk_x
-    global blk_y
-
-    blk_x = blk_x+1
-    if blk_x==tot_x:
-        blk_x=0
-        blk_y = blk_y+1
-        if blk_y==tot_y:
-            blk_y = 0
-'''
-
+    
 def redraw(c,x,y):
+    print "redraw"
     global tot_x,tot_y
     c.delete(ALL)
     for i in range(tot_y):
@@ -176,18 +169,44 @@ def redraw(c,x,y):
                     c.create_text((12+j*block_d,12+i*block_d),text="B")
 
 # main start
+#init var
+def clear_vars():
+    global board_show
+    global remain_blk
+    global game_over
+    global lbl
+    board_show = [ [0 for i in range(tot_x)] for i in range(tot_y)]
+    game_over = False
+    remain_blk = tot_x * tot_y - tot_bomb
+    if lbl !=None:
+        lbl.set("")
+def init():
+    global board
+    clear_vars()
+    board = gen_board(tot_x,tot_y)
+    gen_bomb (tot_bomb,tot_x,tot_y,board)
+    print board
+    cnt_bomb(tot_x,tot_y,board)
+    for s in board:
+        print s
+def game_restart():
+    global c
+    init()
+    redraw(c,0,0)
+
+init()
+#ui init
 root = Tk()
 lbl = StringVar()
 lbl.set("                   ")
+
 root.title("Board ex")
 mainframe = ttk.Frame(root,padding="3 3 12 12") # u b l r
 
 w = ttk.Label(mainframe,text="board ex label",textvariable=lbl)
-b = ttk.Button(mainframe,text="click")
-
+b = ttk.Button(mainframe,text="click",command=game_restart)
 # canvas w = block_d * tot_x,h so on...
 c = Canvas(mainframe,width=block_d * tot_x,height=block_d * tot_y)
-
 mainframe.grid(column=0,row=0)
 w.grid(column=0,row=0,rowspan=2)
 b.grid(column=1,row=1)
@@ -195,7 +214,6 @@ c.grid(column=0,row=2,columnspan=2)
 
 c.bind("<Button-1>",draw)
 
-#check_board(3,3)
 
 redraw(c,0,0)
 root.mainloop()
